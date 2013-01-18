@@ -15,7 +15,7 @@ public class CDIClassTransformer implements ClassFileTransformer {
 
 	public byte[] transform(ClassLoader loader, String className,
 			Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
-			byte[] classfileBuffer) throws IllegalClassFormatException {		
+			byte[] classfileBuffer) throws IllegalClassFormatException {
 		try {
 			className = className.replace('/', '.');
 			pool.insertClassPath(new ByteArrayClassPath(className, classfileBuffer));

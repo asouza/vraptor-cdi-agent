@@ -2,13 +2,10 @@ package br.com.caelum.vraptor.cdi.agent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.inject.Inject;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -18,9 +15,13 @@ import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
+
+import javax.inject.Inject;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import br.com.caelum.vraptor.Convert;
 import br.com.caelum.vraptor.Resource;
-import br.com.caelum.vraptor.VRaptorException;
 import br.com.caelum.vraptor.ioc.ApplicationScoped;
 import br.com.caelum.vraptor.ioc.Component;
 import br.com.caelum.vraptor.ioc.PrototypeScoped;
@@ -62,28 +63,31 @@ public class ConstructorAdapter {
 			throws NotFoundException {
 		CtConstructor constructor = getFirstConstructorWithArgs(ctClass);
 		if (constructor != null) {
-			//for some reasone, javassist needs both annotation. If i add one
-			//by one, it can't keep all.
-			add(ctClass, constructor,Arrays.asList(Inject.class,Autowired.class));
+			// for some reasone, javassist needs both annotation. If i add one
+			// by one, it can't keep all.
+			add(ctClass, constructor,
+					Arrays.asList(Inject.class, Autowired.class));
 		}
 	}
 
-	private void add(CtClass ctClass, CtConstructor constructor,
+	private void add(
+			CtClass ctClass,
+			CtConstructor constructor,
 			List<Class<? extends java.lang.annotation.Annotation>> annotationsToBeAdded) {
-			ClassFile classFile = ctClass.getClassFile();
-			ConstPool constPool = classFile.getConstPool();
-			AnnotationsAttribute annotationsContext = new AnnotationsAttribute(
-					constPool, AnnotationsAttribute.visibleTag);
-			ArrayList<Annotation> annotations = new ArrayList<Annotation>(
-					Arrays.asList(annotationsContext.getAnnotations()));
-			for (Class<? extends java.lang.annotation.Annotation> annotation : annotationsToBeAdded) {
-				Annotation injectAnnotation = new Annotation(
-						annotation.getCanonicalName(), constPool);
-				annotations.add(injectAnnotation);				
-			}
-			annotationsContext.setAnnotations(annotations
-					.toArray(new Annotation[] {}));
-			constructor.getMethodInfo().addAttribute(annotationsContext);
+		ClassFile classFile = ctClass.getClassFile();
+		ConstPool constPool = classFile.getConstPool();
+		AnnotationsAttribute annotationsContext = new AnnotationsAttribute(
+				constPool, AnnotationsAttribute.visibleTag);
+		ArrayList<Annotation> annotations = new ArrayList<Annotation>(
+				Arrays.asList(annotationsContext.getAnnotations()));
+		for (Class<? extends java.lang.annotation.Annotation> annotation : annotationsToBeAdded) {
+			Annotation injectAnnotation = new Annotation(
+					annotation.getCanonicalName(), constPool);
+			annotations.add(injectAnnotation);
+		}
+		annotationsContext.setAnnotations(annotations
+				.toArray(new Annotation[] {}));
+		constructor.getMethodInfo().addAttribute(annotationsContext);
 	}
 
 	private CtConstructor getFirstConstructorWithArgs(CtClass ctClass)
@@ -97,15 +101,24 @@ public class ConstructorAdapter {
 		return null;
 	}
 
+	public static Collection<Class<? extends java.lang.annotation.Annotation>> getValidAnnotations() {
+		return Arrays.asList(Component.class, Resource.class,
+				ApplicationScoped.class, SessionScoped.class,
+				RequestScoped.class, PrototypeScoped.class, Convert.class);
+	}
+
 	private boolean isAValidClass(CtClass ctClass) {
-		return !ctClass.isAnnotation() && !ctClass.isInterface() && !ctClass.isEnum() && !ctClass.isArray()
+		return !ctClass.isAnnotation()
+				&& !ctClass.isInterface()
+				&& !ctClass.isEnum()
+				&& !ctClass.isArray()
 				&& (ctClass.hasAnnotation(Component.class)
 						|| ctClass.hasAnnotation(Resource.class)
 						|| ctClass.hasAnnotation(ApplicationScoped.class)
 						|| ctClass.hasAnnotation(SessionScoped.class)
 						|| ctClass.hasAnnotation(RequestScoped.class)
-						|| ctClass.hasAnnotation(PrototypeScoped.class) 
-						|| ctClass.hasAnnotation(Convert.class));
+						|| ctClass.hasAnnotation(PrototypeScoped.class) || ctClass
+							.hasAnnotation(Convert.class));
 	}
 
 	private boolean thereIsNoArgsConstructor(CtClass ctClass)
