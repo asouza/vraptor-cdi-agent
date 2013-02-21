@@ -2,7 +2,6 @@ package br.com.caelum.vraptor.cdi.agent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +20,7 @@ import javax.inject.Inject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import br.com.caelum.vraptor.Convert;
+import br.com.caelum.vraptor.Intercepts;
 import br.com.caelum.vraptor.Resource;
 import br.com.caelum.vraptor.ioc.ApplicationScoped;
 import br.com.caelum.vraptor.ioc.Component;
@@ -32,6 +32,7 @@ import br.com.caelum.vraptor.ioc.SessionScoped;
 public class ConstructorAdapter {
 	private static Map<String, CtClass> adaptedClasses = new HashMap<String, CtClass>();
 	private final ClassPool classPool;
+	private final ClassValidator classValidator = new ClassValidator();
 
 	public ConstructorAdapter(ClassPool classPool) {
 		this.classPool = classPool;
@@ -44,7 +45,7 @@ public class ConstructorAdapter {
 		}
 		try {
 			CtClass ctClass = classPool.get(className);
-			if (isAValidClass(ctClass) && !thereIsNoArgsConstructor(ctClass)) {
+			if (classValidator.isAValid(ctClass) && !thereIsNoArgsConstructor(ctClass)) {
 				CtConstructor defaultConstructor = new CtConstructor(
 						new CtClass[] {}, ctClass);
 				defaultConstructor.setBody("{}");
@@ -99,26 +100,6 @@ public class ConstructorAdapter {
 			}
 		}
 		return null;
-	}
-
-	public static Collection<Class<? extends java.lang.annotation.Annotation>> getValidAnnotations() {
-		return Arrays.asList(Component.class, Resource.class,
-				ApplicationScoped.class, SessionScoped.class,
-				RequestScoped.class, PrototypeScoped.class, Convert.class);
-	}
-
-	private boolean isAValidClass(CtClass ctClass) {
-		return !ctClass.isAnnotation()
-				&& !ctClass.isInterface()
-				&& !ctClass.isEnum()
-				&& !ctClass.isArray()
-				&& (ctClass.hasAnnotation(Component.class)
-						|| ctClass.hasAnnotation(Resource.class)
-						|| ctClass.hasAnnotation(ApplicationScoped.class)
-						|| ctClass.hasAnnotation(SessionScoped.class)
-						|| ctClass.hasAnnotation(RequestScoped.class)
-						|| ctClass.hasAnnotation(PrototypeScoped.class) || ctClass
-							.hasAnnotation(Convert.class));
 	}
 
 	private boolean thereIsNoArgsConstructor(CtClass ctClass)

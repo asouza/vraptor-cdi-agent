@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <project name="cdiagent" default="jar" basedir=".">
 <!-- where the project source code is found -->
-    <property name="src" location="src" />
+    <property name="src" location="src/main/java" />
     <property name="bin" location="bin" />
     <property name="extdir" location="lib" />
     <property name="jardir" location="jar" />
