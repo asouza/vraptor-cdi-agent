@@ -5,6 +5,7 @@ import javassist.NotFoundException;
 import br.com.caelum.vraptor.Convert;
 import br.com.caelum.vraptor.Intercepts;
 import br.com.caelum.vraptor.Resource;
+import br.com.caelum.vraptor.deserialization.Deserializes;
 import br.com.caelum.vraptor.ioc.ApplicationScoped;
 import br.com.caelum.vraptor.ioc.Component;
 import br.com.caelum.vraptor.ioc.PrototypeScoped;
@@ -13,7 +14,7 @@ import br.com.caelum.vraptor.ioc.SessionScoped;
 
 public class ClassValidator {
 
-	public boolean isAValid(CtClass ctClass) {
+	public boolean isAValid(CtClass ctClass) {		
 		try {
 			return !ctClass.isAnnotation()
 					&& !ctClass.isInterface()
@@ -34,7 +35,8 @@ public class ClassValidator {
 				|| ctClass.hasAnnotation(RequestScoped.class)
 				|| ctClass.hasAnnotation(PrototypeScoped.class)
 				|| ctClass.hasAnnotation(Convert.class) || ctClass
-					.hasAnnotation(Intercepts.class);
+					.hasAnnotation(Intercepts.class)
+				|| ctClass.hasAnnotation(Deserializes.class);
 	}
 	
 }

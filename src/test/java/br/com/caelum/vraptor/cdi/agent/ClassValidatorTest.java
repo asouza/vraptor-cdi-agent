@@ -33,6 +33,12 @@ public class ClassValidatorTest {
 	}
 	
 	@Test
+	public void shouldAcceptEJBResource() throws NotFoundException{
+		CtClass ctClass = pool.get(SomeEJBController.class.getCanonicalName());
+		Assert.assertTrue(validator.isAValid(ctClass));
+	}
+	
+	@Test
 	public void shouldAcceptInheritedResource() throws NotFoundException{
 		CtClass ctClass = pool.get(SomeControllerProxy.class.getCanonicalName());
 		Assert.assertTrue(validator.isAValid(ctClass));
