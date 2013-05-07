@@ -19,15 +19,6 @@ import javax.inject.Inject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import br.com.caelum.vraptor.Convert;
-import br.com.caelum.vraptor.Intercepts;
-import br.com.caelum.vraptor.Resource;
-import br.com.caelum.vraptor.ioc.ApplicationScoped;
-import br.com.caelum.vraptor.ioc.Component;
-import br.com.caelum.vraptor.ioc.PrototypeScoped;
-import br.com.caelum.vraptor.ioc.RequestScoped;
-import br.com.caelum.vraptor.ioc.SessionScoped;
-
 //TODO unit tests
 public class ConstructorAdapter {
 	private static Map<String, CtClass> adaptedClasses = new HashMap<String, CtClass>();
