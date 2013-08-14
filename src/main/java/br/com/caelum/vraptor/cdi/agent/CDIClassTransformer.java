@@ -20,9 +20,12 @@ public class CDIClassTransformer implements ClassFileTransformer {
 			className = className.replace('/', '.');
 			pool.insertClassPath(new ByteArrayClassPath(className, classfileBuffer));
 			CtClass modified = new ConstructorAdapter(pool)
-			.tryToAddCDIConstructorFor(className);			
-			return modified.toBytecode();
-		} catch (Exception e) {
+				.tryToAddCDIConstructorFor(className);
+			if (modified != null){
+				return modified.toBytecode();
+			}
+			return classfileBuffer;
+		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
 	}

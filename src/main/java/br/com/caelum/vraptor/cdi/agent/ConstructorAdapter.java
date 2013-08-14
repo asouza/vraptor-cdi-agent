@@ -15,10 +15,6 @@ import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
 
-import javax.inject.Inject;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 //TODO unit tests
 public class ConstructorAdapter {
 	private static Map<String, CtClass> adaptedClasses = new HashMap<String, CtClass>();
@@ -37,14 +33,16 @@ public class ConstructorAdapter {
 		try {
 			CtClass ctClass = classPool.get(className);
 			if (classValidator.isAValid(ctClass) && !thereIsNoArgsConstructor(ctClass)) {
+				addInjectionAnnotationsForAllProviders(ctClass);
 				CtConstructor defaultConstructor = new CtConstructor(
 						new CtClass[] {}, ctClass);
 				defaultConstructor.setBody("{}");
-				addInjectionAnnotationsForAllProviders(ctClass);
 				ctClass.addConstructor(defaultConstructor);
+				return ctClass;
 			}
-			return ctClass;
-		} catch (Exception e) {
+			return null;
+		} catch (Throwable e) {
+			System.err.println(e);
 			throw new RuntimeException(e);
 		}
 
@@ -53,51 +51,35 @@ public class ConstructorAdapter {
 	@SuppressWarnings("unchecked")
 	private void addInjectionAnnotationsForAllProviders(CtClass ctClass)
 			throws NotFoundException {
-		CtConstructor constructor = getFirstConstructorWithArgs(ctClass);
-		if (constructor != null) {
-			// for some reasone, javassist needs both annotation. If i add one
-			// by one, it can't keep all.
-			add(ctClass, constructor,
-					Arrays.asList(Inject.class, Autowired.class));
-		}
+		CtConstructor constructor = ctClass.getDeclaredConstructors()[0];
+		add(ctClass, constructor, Arrays.asList("javax.inject.Inject"));
 	}
 
 	private void add(
 			CtClass ctClass,
 			CtConstructor constructor,
-			List<Class<? extends java.lang.annotation.Annotation>> annotationsToBeAdded) {
+			List<String> annotationsToBeAdded) {
 		ClassFile classFile = ctClass.getClassFile();
 		ConstPool constPool = classFile.getConstPool();
 		AnnotationsAttribute annotationsContext = new AnnotationsAttribute(
 				constPool, AnnotationsAttribute.visibleTag);
-		ArrayList<Annotation> annotations = new ArrayList<Annotation>(
+		List<Annotation> annotations = new ArrayList<Annotation>(
 				Arrays.asList(annotationsContext.getAnnotations()));
-		for (Class<? extends java.lang.annotation.Annotation> annotation : annotationsToBeAdded) {
-			Annotation injectAnnotation = new Annotation(
-					annotation.getCanonicalName(), constPool);
-			annotations.add(injectAnnotation);
+
+		for (String annotation : annotationsToBeAdded) {
+			annotations.add(new Annotation(annotation, constPool));
 		}
+
 		annotationsContext.setAnnotations(annotations
 				.toArray(new Annotation[] {}));
 		constructor.getMethodInfo().addAttribute(annotationsContext);
-	}
-
-	private CtConstructor getFirstConstructorWithArgs(CtClass ctClass)
-			throws NotFoundException {
-		CtConstructor[] constructors = ctClass.getDeclaredConstructors();
-		for (CtConstructor ctConstructor : constructors) {
-			if (ctConstructor.getParameterTypes().length > 0) {
-				return ctConstructor;
-			}
-		}
-		return null;
 	}
 
 	private boolean thereIsNoArgsConstructor(CtClass ctClass)
 			throws NotFoundException {
 		CtConstructor[] constructors = ctClass.getDeclaredConstructors();
 		for (CtConstructor ctConstructor : constructors) {
-			if (ctConstructor.getParameterTypes().length == 0) {
+			if (ctConstructor.getSignature().startsWith("()")) {
 				return true;
 			}
 		}

@@ -4,6 +4,7 @@
     <property name="src" location="src/main/java" />
     <property name="bin" location="bin" />
     <property name="extdir" location="lib" />
+    <property name="dirbundled" location="lib-bundled" />
     <property name="jardir" location="jar" />
     <property name="firstVersionOfJarFile" location="${jardir}/depencies.jar" />        
     <property name="jarfile" location="${jardir}/${ant.project.name}.jar" />        
@@ -40,7 +41,7 @@
     <!-- Compile.  The classpath is set to include the external jars      -->
     <!-- mentioned in my previous blog about ImageJ plugin development.   -->
     <target name="compile" depends="init,copyfiles" description="compile classes">
-        <javac destdir="${bin}" srcdir="${tempsrcdir}" classpath="${extdir}/javax.inject-1.jar:${extdir}/javassist-3.12.1.GA.jar:${extdir}/spring-beans-3.0.6.RELEASE.jar:${extdir}/vraptor-3.5.0-SNAPSHOT.jar">
+        <javac debug="true" destdir="${bin}" srcdir="${tempsrcdir}" classpath="${extdir}/cdi-api-1.1.jar:${extdir}/javax.inject-1.jar:${extdir}/javassist-3.12.1.GA.jar:${extdir}/spring-beans-3.0.6.RELEASE.jar">
         </javac>
     </target>
         
@@ -51,7 +52,7 @@
     <!-- <attribute name="Main-Class" value="your.main.class"/>           -->
     <target name="jar" depends="init,copyfiles,compile" description="build jar">
            <jar destfile="${firstVersionOfJarFile}">
-              <zipgroupfileset dir="${extdir}"  includes="**/*.jar"/>                                      
+              <zipgroupfileset dir="${dirbundled}"  includes="**/*.jar"/>                                      
            </jar>
         <sleep seconds="1"/>
         <jar destfile="${jarfile}">
