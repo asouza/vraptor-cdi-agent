@@ -48,7 +48,6 @@ public class ConstructorAdapter {
 
 	}
 
-	@SuppressWarnings("unchecked")
 	private void addInjectionAnnotationsForAllProviders(CtClass ctClass)
 			throws NotFoundException {
 		CtConstructor constructor = ctClass.getDeclaredConstructors()[0];
